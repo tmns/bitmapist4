@@ -211,7 +211,7 @@ class Bitmapist(object):
                 ret.add(event_name)
         return sorted(ret)
 
-    def get_events_in_range(self, event_name, dt=None, delta=0, scale='day'):
+    def get_events_in_range(self, event_name, from_date=None, delta=0, unit='day'):
         """
         Return events over a specified range.
         
@@ -219,9 +219,9 @@ class Bitmapist(object):
          * How many users used android between 1-12-19 and 4-12-19?
          * How many users used ios between February and May?
 
-        The dt value should be a datetime object.
+        The from_date value should be a datetime object.
         The delta value should be an integer.
-        The scale value can be set to the string 'day', 'week', 'month', or 'year'.
+        The unit value can be set to the string 'day', 'week', 'month', or 'year'.
 
         Example:
 
@@ -229,25 +229,27 @@ class Bitmapist(object):
             date = datetime.strptime('19-02-19', '%d-%m-%y')
             b.get_events_in_range('device:android', date, 36, 'day')
         """
-        dt = dt or datetime.datetime.utcnow()
+        from_date = from_date or datetime.datetime.utcnow()
         
         events = []
-        if scale == 'day':
-            events.append(self.DayEvents.from_date(event_name, dt))
+        if unit == 'day':
+            events.append(self.DayEvents.from_date(event_name, from_date))
             for i in range(delta):
-                events.append(self.DayEvents.from_date(event_name, dt).delta(-(i + 1)))
-        elif scale == 'week':
-            events.append(self.WeekEvents.from_date(event_name, dt))
+                events.append(self.DayEvents.from_date(event_name, from_date).delta(-(i + 1)))
+        elif unit == 'week':
+            events.append(self.WeekEvents.from_date(event_name, from_date))
             for i in range(delta):
-                events.append(self.WeekEvents.from_date(event_name, dt).detla(-(i + 1)))
-        elif scale == 'month':
-            events.append(self.MonthEvents.from_date(event_name, dt))
+                events.append(self.WeekEvents.from_date(event_name, from_date).delta(-(i + 1)))
+        elif unit == 'month':
+            events.append(self.MonthEvents.from_date(event_name, from_date))
             for i in range(delta):
-                events.append(self.MonthEvents.from_date(event_name, dt).delta(-(i + 1)))
-        elif scale == 'year':
-            events.append(self.YearEvents.from_date(event_name, dt))
+                events.append(self.MonthEvents.from_date(event_name, from_date).delta(-(i + 1)))
+        elif unit == 'year':
+            events.append(self.YearEvents.from_date(event_name, from_date))
             for i in range(delta):
-                events.append(self.YearEvents.from_date(event_name, dt).delta(-(i + 1)))
+                events.append(self.YearEvents.from_date(event_name, from_date).delta(-(i + 1)))
+        else:
+            return 'Unit "{}" is not valid. Try "day", "week", "month", or "year".'.format(unit)
         if events:
             if len(events) == 1:
                 return(events[0])
